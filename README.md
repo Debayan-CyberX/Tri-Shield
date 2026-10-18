@@ -18,7 +18,8 @@ Policy: localized ELA tamper covering **≥ 1%** of the page is treated as **FAI
 Python 3.11+ recommended. Tesseract OCR is optional but improves extraction on arbitrary photos (demo cards also embed a QR payload so the flow still works without Tesseract).
 
 ```powershell
-cd C:\Users\shivl\Projects\tri-shield
+git clone https://github.com/Debayan-CyberX/Tri-Shield.git
+cd Tri-Shield
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -53,10 +54,10 @@ Open the Streamlit URL, pick a demo sample, click **Run Tri-Shield verification*
 
 | Sample | Expected |
 |---|---|
-| `sample_docs/aadhaar_clean.jpg` | ~96% PASS, Verhoeff match, ELA clean |
-| `sample_docs/aadhaar_tampered.jpg` | ~18% FAIL, name region boxed red on heatmap |
-| `sample_docs/pan_valid.jpg` | ~93% PASS, regex + type code P |
-| `sample_docs/pan_invalid_type.jpg` | ~11% FAIL, **Invalid type code 'X'** |
+| `sample_docs/aadhaar_clean.jpg` | PASS (sample heuristic), Verhoeff match, ELA clean |
+| `sample_docs/aadhaar_tampered.jpg` | FAIL (sample heuristic), name region boxed red on heatmap |
+| `sample_docs/pan_valid.jpg` | PASS (sample heuristic), regex + type code P |
+| `sample_docs/pan_invalid_type.jpg` | FAIL (sample heuristic), **Invalid type code 'X'** |
 | **Simulate ledger tamper** | Red **FORGED / BROKEN CHAIN** on the log |
 
 Samples are **fictional placeholder cards**, not UIDAI/ITD templates and not real people.
@@ -87,3 +88,17 @@ tri-shield/
 ```
 
 Adding Voter ID / Passport / DL later: implement another `DocumentValidator` in `backend/validators.py` and register it in `VALIDATORS`. Optional CCTNS-style APIs belong in `backend/gov_hooks.py` (not invoked offline). Optional CNN scoring lives in `backend/ml_optional.py` and must remain an extra signal, not a replacement for checksums + ELA.
+
+## Implementation and technical tradeoff
+
+I built the complete application: processing pipeline, validation and forensics, audit chain, API, Streamlit interface, and tests. Teammates supported research and presentations.
+
+Combine structural rules and image-forensics heuristics with a local hash chain. The approach runs offline, but compression artifacts and local storage limit what it can prove.
+
+## Interpretation and limitations
+
+Checksums validate structure, not identity. Error Level Analysis is a heuristic that can misclassify images. The local ledger is tamper-evident, not a distributed blockchain or government identity verification. Scores and demonstration verdicts are outputs of the configured heuristic, not measured accuracy or a guarantee of document authenticity. A locally controlled hash chain does not establish an external trust anchor.
+
+## Portfolio
+
+[Project case study](https://debayan-cyberx.github.io/Deb-s-Portfolio.github.io/#project-trishield) · [Test sources](tests/)
